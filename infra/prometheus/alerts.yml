@@ -1,0 +1,60 @@
+groups:
+  - name: edgeguard-availability
+    rules:
+      - alert: GatewayDown
+        expr: up{job="gateway"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Gateway scrape target is down
+          description: Prometheus cannot scrape the EdgeGuard gateway.
+
+      - alert: RedisDown
+        expr: edgeguard_gateway_redis_up == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: Gateway lost Redis connectivity
+          description: The gateway is serving from its in-process fallback limiter.
+
+      - alert: HighUpstreamFailureRate
+        expr: sum(rate(edgeguard_gateway_upstream_failures_total[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Elevated upstream failures
+          description: More than one upstream failure per second for five minutes.
+
+  - name: edgeguard-security
+    rules:
+      - alert: HighBlockRate
+        expr: sum(rate(edgeguard_gateway_blocked_total[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Unusually high blocked request rate
+          description: More than five blocked requests per second for five minutes.
+
+      - alert: ManyActiveIsolations
+        expr: edgeguard_gateway_active_blocks > 25
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Many clients are temporarily isolated
+          description: Check detection events for an attack in progress.
+
+  - name: edgeguard-latency
+    rules:
+      - alert: GatewayP95LatencyHigh
+        expr: histogram_quantile(0.95, sum by (le) (rate(edgeguard_gateway_request_duration_seconds_bucket[5m]))) > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Gateway p95 latency above one second
+          description: Investigate upstream latency or gateway saturation.

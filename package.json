@@ -1,0 +1,50 @@
+{
+  "name": "edgeguard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "EdgeGuard - production-inspired API protection platform",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "tools/*"
+  ],
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n demo,gateway,dashboard -c magenta,cyan,green \"npm:dev:demo\" \"npm:dev:gateway\" \"npm:dev:dashboard\"",
+    "dev:gateway": "npm run dev -w @edgeguard/gateway",
+    "dev:demo": "npm run dev -w @edgeguard/demo-api",
+    "dev:dashboard": "npm run dev -w @edgeguard/dashboard",
+    "build": "npm run build -w @edgeguard/gateway && npm run build -w @edgeguard/demo-api && npm run build -w @edgeguard/dashboard",
+    "lint": "eslint .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test:shared && npm run test:gateway && npm run test:demo && npm run test:dashboard",
+    "test:shared": "npm run test -w @edgeguard/shared",
+    "test:gateway": "npm run test -w @edgeguard/gateway",
+    "test:demo": "npm run test -w @edgeguard/demo-api",
+    "test:dashboard": "npm run test -w @edgeguard/dashboard",
+    "infra:up": "docker compose up -d redis demo-api gateway dashboard prometheus grafana",
+    "infra:down": "docker compose down",
+    "infra:reset": "docker compose down -v",
+    "compose:build": "docker compose build",
+    "loadgen": "npm run start -w @edgeguard/loadgen --",
+    "hash-password": "node scripts/hash-password.mjs",
+    "validate:manifests": "node scripts/validate-manifests.mjs",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build && npm run validate:manifests"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.28.0",
+    "bcryptjs": "2.4.3",
+    "concurrently": "9.1.2",
+    "eslint": "9.28.0",
+    "eslint-plugin-react-hooks": "5.2.0",
+    "eslint-plugin-react-refresh": "0.4.20",
+    "globals": "15.15.0",
+    "typescript": "5.8.3",
+    "typescript-eslint": "8.33.1",
+    "yaml": "2.8.0"
+  }
+}

@@ -1,0 +1,27 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 15s
+  external_labels:
+    stack: edgeguard
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  - job_name: gateway
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["gateway:8080"]
+        labels:
+          service: edgeguard-gateway
+
+  - job_name: demo-api
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["demo-api:4000"]
+        labels:
+          service: edgeguard-demo-api
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
